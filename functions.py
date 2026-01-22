@@ -65,7 +65,16 @@ def update(task_id, text):
     
 
 def list():
-    pass
+    with open('data.json', 'r') as f:
+        data = json.load(f)
+
+        if not data:
+            print("No data found.")
+            return
+    
+    for item in data:
+        print(f"ID: {item['id']}, Description: {item['description']}, Status: {item['completed']}, Created At: {item['created_at']}, Updated At: {item['updated_at']}")
+
 
 def mark_in_progress():
     pass
