@@ -76,8 +76,37 @@ def list():
         print(f"ID: {item['id']}, Description: {item['description']}, Status: {item['completed']}, Created At: {item['created_at']}, Updated At: {item['updated_at']}")
 
 
-def mark_in_progress():
-    pass
+def mark_in_progress(task_id):
+    with open('data.json', 'r') as f:
+            data = json.load(f)
 
-def mark_done():
-    pass
+    if not data:
+            print("No data found.")
+            return
+
+    index = task_id - 1
+
+
+
+    data[index]["completed"] = "in progress"
+
+
+    with open("data.json", "w") as f:
+        json.dump(data, f, indent=4)
+
+def mark_done(task_id):
+    with open('data.json', 'r') as f:
+            data = json.load(f)
+
+    if not data:
+            print("No data found.")
+            return
+
+    index = task_id - 1
+
+
+    data[index]["completed"] = "done"
+
+
+    with open("data.json", "w") as f:
+        json.dump(data, f, indent=4)
