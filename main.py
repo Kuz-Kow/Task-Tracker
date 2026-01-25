@@ -6,32 +6,7 @@ import os
 import time
 
 
-def delete(task_id):
-    if os.path.exists("data.json"):
-        with open("data.json", "r") as f:
-            try: 
-                data = json.load(f)
-            except json.JSONDecodeError:
-                data = []
 
-    else:
-        print("There is no database")
-
-
-    index = int(task_id) - 1
-
-
-    del data[index]
-
-    with open("data.json", "w") as f:
-        json.dump(data, f, indent=4)
-
-    print("Pomyślnie usunięto zapis")
-
-
-    
-
-    
 
 
 def add(text):
@@ -110,6 +85,29 @@ def list_tasks(progress):
         for item in data:
             if item["completed"] == progress:
                 print(f"ID: {item['id']}, Description: {item['description']}, Status: {item['completed']}, Created At: {item['created_at']}, Updated At: {item['updated_at']}")
+
+
+def delete(task_id):
+    if os.path.exists("data.json"):
+        with open("data.json", "r") as f:
+            try: 
+                data = json.load(f)
+            except json.JSONDecodeError:
+                data = []
+
+    else:
+        print("There is no database")
+
+
+    index = int(task_id) - 1
+
+
+    del data[index]
+
+    with open("data.json", "w") as f:
+        json.dump(data, f, indent=4)
+
+    print("Pomyślnie usunięto zapis")
 
 
 
