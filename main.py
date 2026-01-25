@@ -9,6 +9,7 @@ import time
 
 
 
+
 def add(text):
     new_task = task.task(text)
 
@@ -55,6 +56,9 @@ def update(task_id, text):
 
     index = int(task_id) - 1
 
+    if index > len(data):
+        print(f"Theres no item with index {task_id}")
+        return
 
     data[index]["description"] = text
     data[index]["updated_at"] = time.asctime()
@@ -68,6 +72,7 @@ def update(task_id, text):
     
 
 def list_tasks(progress):
+
 
     
     with open('data.json', 'r') as f:
@@ -98,16 +103,24 @@ def delete(task_id):
     else:
         print("There is no database")
 
+    if int(task_id) > len(data):
+        print(f"Theres no item with index {task_id}")
+        return
+
 
     index = int(task_id) - 1
 
 
+
     del data[index]
+
+    for i in range (index, len(data)):
+        data[i]["id"] = data[i]["id"] - 1
 
     with open("data.json", "w") as f:
         json.dump(data, f, indent=4)
 
-    print("Pomyślnie usunięto zapis")
+    print(f"Item with id {task_id} has been deleted")
 
 
 
@@ -121,6 +134,10 @@ def mark_in_progress(task_id):
 
     else:
         print("There is no database")
+    
+    if int(task_id) > len(data):
+        print(f"Theres no item with index {task_id}")
+        return
 
 
     index = int(task_id) - 1
@@ -143,6 +160,10 @@ def mark_done(task_id):
 
     else:
         print("There is no database")
+
+    if int(task_id) > len(data):
+        print(f"Theres no item with index {task_id}")
+        return
 
 
     index = int(task_id) - 1
@@ -196,6 +217,8 @@ mark_in_done_parser.add_argument( dest="mark_done", type=str, help='...')
 
 args = parser.parse_args()
 
+
+
 if args.command == 'list':
     list_tasks(args.progress)
 
@@ -215,8 +238,6 @@ if args.command == 'mark-in-progress':
 if args.command == 'mark-done':
     mark_done(args.mark_done)
 
-if args.command == 'mark-done':
-    pass
 
 
 
