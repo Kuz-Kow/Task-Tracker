@@ -179,34 +179,34 @@ def mark_done(task_id):
 
 
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(prog='Task-Tracker-CLI', description='Task Tracker CLI is a simple command-line application for managing tasks. It allows you to add, update, delete, and track the status of your tasks. All tasks are stored in a local JSON file in the current directory.')
 
 
 subparsers = parser.add_subparsers(dest= "command", required= True)
-add_parser = subparsers.add_parser('add', help='...')
-add_parser.add_argument('Task_text', type=str, help='...', action='store')
+add_parser = subparsers.add_parser('add', help='Add a new task')
+add_parser.add_argument('Task_text', type=str, help='Description of the task', action='store')
 
 
 
-update_parser = subparsers.add_parser('update', help='...')
-update_parser.add_argument( metavar=("TASK_ID", "TEXT"), type=str, help='...', nargs=2, dest='update_task', action='store')
+update_parser = subparsers.add_parser('update', help='Update an existing task')
+update_parser.add_argument( metavar=("TASK_ID", "TEXT"), type=str, help='Task ID and new description', nargs=2, dest='update_task', action='store')
 
 
 
-delete_parser = subparsers.add_parser('delete', help='...')
-delete_parser.add_argument( dest="delete_task", type=str, help='...')
+delete_parser = subparsers.add_parser('delete', help='Delete a task by ID')
+delete_parser.add_argument( dest="delete_task", type=str, help='ID of the task to delete()')
 
 
 
 
-list_parser = subparsers.add_parser('list', help='...')
+list_parser = subparsers.add_parser('list', help='List tasks (optionally by status)')
 list_parser.add_argument(dest = 'progress', type=str ,default=None)
 
-mark_in_progress_parser = subparsers.add_parser('mark-in-progress', help='...')
-mark_in_progress_parser.add_argument( dest="mark_in_progress", type=str, help='...')
+mark_in_progress_parser = subparsers.add_parser('mark-in-progress', help='Filter by status: todo, in-progress, done')
+mark_in_progress_parser.add_argument( dest="mark_in_progress", type=str, help='ID of the task')
 
-mark_in_done_parser = subparsers.add_parser('mark-done', help='...')
-mark_in_done_parser.add_argument( dest="mark_done", type=str, help='...')
+mark_in_done_parser = subparsers.add_parser('mark-done', help='Mark a task as done')
+mark_in_done_parser.add_argument( dest="mark_done", type=str, help='ID of the task')
 
 
 
