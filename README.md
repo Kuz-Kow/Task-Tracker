@@ -9,74 +9,73 @@ Features
 
 The application supports the following actions:
 
-Add a new task
+  Add a new task
 
-Update an existing task
+  Update an existing task
 
-Delete a task
+  Delete a task
 
-Mark a task as in-progress
+  Mark a task as in-progress
 
-Mark a task as done
+  Mark a task as done
 
-List all tasks
+  List all tasks
 
-List tasks by status:
+  List tasks by status:
 
-todo
+    todo
 
-in-progress
+    in-progress
 
-done
+    done
 
 Task Properties
 
-Each task has the following properties:
+  Each task has the following properties:
 
-id – Unique identifier
+    id – Unique identifier
 
-description – Short task description
+    description – Short task description
 
-status – todo, in-progress, or done
+    status – todo, in-progress, or done
 
-createdAt – Date and time when the task was created
+    createdAt – Date and time when the task was created
 
-updatedAt – Date and time when the task was last updated
+    updatedAt – Date and time when the task was last updated
 
-Installation
 
 Usage
 
-All commands are run from the terminal using positional arguments.
+  All commands are run from the terminal using positional arguments.
 
-Add a new task
-task-cli add "Buy groceries"
+    Add a new task
+    main add "Buy groceries"
 
-Update a task
-task-cli update 1 "Buy groceries and cook dinner"
+    Update a task
+    main update 1 "Buy groceries and cook dinner"
 
-Delete a task
-task-cli delete 1
+    Delete a task
+    main delete 1
 
-Mark task as in progress
-task-cli mark-in-progress 1
+    Mark task as in progress
+    main mark-in-progress 1
 
-Mark task as done
-task-cli mark-done 1
+    Mark task as done
+    main mark-done 1
 
-List all tasks
-task-cli list
+    List all tasks
+    main list
 
-List tasks by status
-task-cli list todo
-task-cli list in-progress
-task-cli list done
+    List tasks by status
+    main list todo
+    main list in-progress
+    main list done
 
 Data Storage
 
-All tasks are stored in a file called:
+  All tasks are stored in a file called:
 
-data.json
+  data.json
 
 
 The file is automatically created in the current directory if it does not exist.
