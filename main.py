@@ -1,254 +1,203 @@
-import task_class as task
 import argparse
 import json
-import task_class as task
-import os
-import time
+import datetime
+from pathlib import Path
+import functools
+from typing import TypedDict, Literal, Callable
+
+DATA_PATH = Path("data.json")
+
+type data_base = dict[str, Field]
 
 
+class Field(TypedDict):
+    description: str
+    status: Literal["todo", "done", "in-progress"]
+    created_at: str
+    updated_at: str
 
 
+def main() -> None:
+    args = vars(parser.parse_args())
+    function = args.pop("func")
+    function(**args)
 
 
-def add(text):
-    new_task = task.task(text)
+def data(func: Callable):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        data = get_data()
+        result = func(data, *args, **kwargs)
+        store_data(data)
+        return result
 
-    new_task_data = {
-            "id": new_task.id,
-            "description": new_task.description,
-            "completed": "todo",
-            "created_at": new_task.created_at,
-            "updated_at": new_task.updated_at
-        }
+    return wrapper
 
 
-    if os.path.exists("data.json"):
-        with open("data.json", "r") as f:
-            try:
-                data = json.load(f)
-            except json.JSONDecodeError:
-                data = []
+def get_data() -> data_base:
+    """
+    Get's data from file
+    """
+
+    try:
+        with DATA_PATH.open("r", encoding="utf-8") as file:
+            data: data_base = json.load(file)
+            return data
+    except FileNotFoundError:
+        return {}
+
+
+def store_data(data: data_base) -> None:
+    """
+    Stores data in the file
+    """
+
+    with DATA_PATH.open("w", encoding="utf-8") as file:
+        json.dump(data, file, indent=2)
+
+
+@data
+def add(data: data_base, text: str) -> None:
+    """
+    Adds new record to the data base
+    """
+
+    today: str = datetime.date.today().strftime("%Y-%m-%d %H:%M:%S")
+    new_id = max(map(int, data), default=0) + 1
+    data[str(len(data.keys()) + 1)] = {
+        "description": text,
+        "status": "todo",
+        "created_at": today,
+        "updated_at": today,
+    }
+    print(f"Task added successfully (ID :{new_id})")
+
+
+@data
+def update(data: data_base, id: str, text: str) -> None:
+    """
+    Updates existing record with new description.
+    If id of the record not in the data base KeyError raiesed.
+    """
+
+    today = datetime.date.today().strftime("%Y-%m-%d %H:%M:%S")
+    if id in data:
+        data[id]["description"] = text
+        data[id]["updated_at"] = today
     else:
-        data = []
+        raise KeyError("There no task with this id")
 
 
-    new_task_data["id"] = data[-1]["id"] + 1 if data else 1
-    new_task.id = new_task_data["id"]
+@data
+def delete(data: data_base, id: str) -> None:
+    """
+    Deletes record from the data base.
+    If id of the record not in the data base KeyError raiesed.
+    """
 
-    data.append(new_task_data)
-
-
-    with open("data.json", "w") as f:
-        json.dump(data, f, indent=4)
-
-    print(f"Added task: {text} with ID {new_task_data['id']}")
-
-
-
-
-def update(task_id, text):
-    with open('data.json', 'r') as f:
-        data = json.load(f)
-
-        if not data:
-            print("No data found.")
-            return
-
-    index = int(task_id) - 1
-
-    if index > len(data):
-        print(f"Theres no item with index {task_id}")
-        return
-
-    data[index]["description"] = text
-    data[index]["updated_at"] = time.asctime()
-
-
-    with open("data.json", "w") as f:
-        json.dump(data, f, indent=4)
-
-
-        
-    
-
-def list_tasks(progress):
-
-
-    
-    with open('data.json', 'r') as f:
-        data = json.load(f)
-
-    if not data:
-        print("No data found.")
-        return
-    
-    if progress == None:
-            
-        for item in data:
-            print(f"ID: {item['id']}, Description: {item['description']}, Status: {item['completed']}, Created At: {item['created_at']}, Updated At: {item['updated_at']}")
+    if id in data:
+        del data[id]
     else:
-        for item in data:
-            if item["completed"] == progress:
-                print(f"ID: {item['id']}, Description: {item['description']}, Status: {item['completed']}, Created At: {item['created_at']}, Updated At: {item['updated_at']}")
+        raise KeyError("There no task with this id")
 
 
-def delete(task_id):
-    if os.path.exists("data.json"):
-        with open("data.json", "r") as f:
-            try: 
-                data = json.load(f)
-            except json.JSONDecodeError:
-                data = []
+def list_tasks(progress: Literal["todo", "done", "in-progress"] | None) -> None:
+    """
+    Lists tasks with status provieded as a progress argument.
+    If no rogress argument was provided lists all task.
+    """
 
+    db = get_data()
+    for id, fields in db.items():
+        if progress is None or fields["status"] == progress:
+            print(f"\nid : {id}")
+            for field in fields.items():
+                print(f"{field[0]} : {field[1]}")
+
+
+@data
+def mark_in_progress(data: data_base, id: str):
+    """
+    Mark existing task in the data base as in-progress.
+    If id of the record not in the data base KeyError raiesed.
+    """
+
+    today: str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    if id in data:
+        data[id]["status"] = "in-progress"
+        data[id]["updated_at"] = today
     else:
-        print("There is no database")
-
-    if int(task_id) > len(data):
-        print(f"Theres no item with index {task_id}")
-        return
+        raise KeyError("There no task with this id")
 
 
-    index = int(task_id) - 1
+@data
+def mark_done(data: data_base, id: str):
+    """
+    Marks existing task in the data base as done.
+    If id of the record not in the data base KeyError raiesed.
+    """
 
-
-
-    del data[index]
-
-    for i in range (index, len(data)):
-        data[i]["id"] = data[i]["id"] - 1
-
-    with open("data.json", "w") as f:
-        json.dump(data, f, indent=4)
-
-    print(f"Item with id {task_id} has been deleted")
-
-
-
-def mark_in_progress(task_id):
-    if os.path.exists("data.json"):
-        with open("data.json", "r") as f:
-            try: 
-                data = json.load(f)
-            except json.JSONDecodeError:
-                data = []
-
+    today: str = datetime.date.today().strftime("%Y-%m-%d %H:%M:%S")
+    if id in data:
+        data[id]["status"] = "done"
+        data[id]["updated_at"] = today
     else:
-        print("There is no database")
-    
-    if int(task_id) > len(data):
-        print(f"Theres no item with index {task_id}")
-        return
+        raise KeyError("There no task with this id")
 
 
-    index = int(task_id) - 1
+parser = argparse.ArgumentParser(
+    prog="Task-Tracker-CLI",
+    description="Task Tracker CLI is a simple command-line application for managing tasks. It allows you to add, update, delete, and track the status of your tasks. All tasks are stored in a local JSON file in the current directory.",
+)
 
 
-    data[index]["completed"] = "in-progress"
-    data[index]["updated_at"] = time.asctime()
+subparsers = parser.add_subparsers(required=True)
 
-    with open("data.json", "w") as f:
-        json.dump(data, f, indent=4)
+add_parser = subparsers.add_parser("add", help="Add a new task")
+add_parser.add_argument(
+    "text", type=str, help="Description of the task", action="store"
+)
+add_parser.set_defaults(func=add)
 
 
-def mark_done(task_id):
-    if os.path.exists("data.json"):
-        with open("data.json", "r") as f:
-            try: 
-                data = json.load(f)
-            except json.JSONDecodeError:
-                data = []
+update_parser = subparsers.add_parser("update", help="Update an existing task")
+update_parser.add_argument(
+    "id", type=str, help="Task ID to update the task", action="store"
+)
+update_parser.add_argument(
+    "text",
+    type=str,
+)
+update_parser.set_defaults(func=update)
 
-    else:
-        print("There is no database")
 
-    if int(task_id) > len(data):
-        print(f"Theres no item with index {task_id}")
-        return
+delete_parser = subparsers.add_parser("delete", help="Delete a task by ID")
+delete_parser.add_argument(dest="id", type=str, help="ID of the task to delete()")
+delete_parser.set_defaults(func=delete)
 
 
-    index = int(task_id) - 1
+list_parser = subparsers.add_parser("list", help="List tasks (optionally by status)")
+list_parser.add_argument(
+    dest="progress",
+    type=str,
+    default=None,
+    nargs="?",
+    choices=["done", "todo", "in-progress"],
+)
 
+list_parser.set_defaults(func=list_tasks)
 
-    data[index]["completed"] = "done"
-    data[index]["updated_at"] = time.asctime()
 
-    with open("data.json", "w") as f:
-        json.dump(data, f, indent=4)
+mark_in_progress_parser = subparsers.add_parser(
+    "mark-in-progress", help="Filter by status: todo, in-progress, done"
+)
+mark_in_progress_parser.add_argument(dest="id", type=str, help="ID of the task")
+mark_in_progress_parser.set_defaults(func=mark_in_progress)
 
+mark_done_parser = subparsers.add_parser("mark-done", help="Mark a task as done")
+mark_done_parser.add_argument(dest="id", type=str, help="ID of the task")
+mark_done_parser.set_defaults(func=mark_done)
 
 
-
-
-parser = argparse.ArgumentParser(prog='Task-Tracker-CLI', description='Task Tracker CLI is a simple command-line application for managing tasks. It allows you to add, update, delete, and track the status of your tasks. All tasks are stored in a local JSON file in the current directory.')
-
-
-subparsers = parser.add_subparsers(dest= "command", required= True)
-add_parser = subparsers.add_parser('add', help='Add a new task')
-add_parser.add_argument('Task_text', type=str, help='Description of the task', action='store')
-
-
-
-update_parser = subparsers.add_parser('update', help='Update an existing task')
-update_parser.add_argument( metavar=("TASK_ID", "TEXT"), type=str, help='Task ID and new description', nargs=2, dest='update_task', action='store')
-
-
-
-delete_parser = subparsers.add_parser('delete', help='Delete a task by ID')
-delete_parser.add_argument( dest="delete_task", type=str, help='ID of the task to delete()')
-
-
-
-
-list_parser = subparsers.add_parser('list', help='List tasks (optionally by status)')
-list_parser.add_argument(dest = 'progress', type=str ,default=None)
-
-mark_in_progress_parser = subparsers.add_parser('mark-in-progress', help='Filter by status: todo, in-progress, done')
-mark_in_progress_parser.add_argument( dest="mark_in_progress", type=str, help='ID of the task')
-
-mark_in_done_parser = subparsers.add_parser('mark-done', help='Mark a task as done')
-mark_in_done_parser.add_argument( dest="mark_done", type=str, help='ID of the task')
-
-
-
-
-
-
-
-
-args = parser.parse_args()
-
-
-
-if args.command == 'list':
-    list_tasks(args.progress)
-
-
-if args.command == 'add':
-    add(args.Task_text)
-
-if args.command == 'update':
-    update(args.update_task[0], args.update_task[1])
-
-if args.command == 'delete':
-    delete(args.delete_task)
-
-if args.command == 'mark-in-progress':
-    mark_in_progress(args.mark_in_progress)
-
-if args.command == 'mark-done':
-    mark_done(args.mark_done)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+if __name__ == "__main__":
+    main()
