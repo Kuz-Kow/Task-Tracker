@@ -56,7 +56,7 @@ def store_data(data: data_base) -> None:
         json.dump(data, file, indent=2)
 
 
-#@data
+@data
 def add(data: data_base, text: str) -> None:
     """
     Adds new record to the data base
@@ -73,7 +73,7 @@ def add(data: data_base, text: str) -> None:
     print(f"Task added successfully (ID :{new_id})")
 
 
-#@data
+@data
 def update(data: data_base, id: str, text: str) -> None:
     """
     Updates existing record with new description.
@@ -88,7 +88,7 @@ def update(data: data_base, id: str, text: str) -> None:
         raise KeyError("There no task with this id")
 
 
-#@data
+@data
 def delete(data: data_base, id: str) -> None:
     """
     Deletes record from the data base.
@@ -115,7 +115,7 @@ def list_tasks(progress: Literal["todo", "done", "in-progress"] | None) -> None:
                 print(f"{field[0]} : {field[1]}")
 
 
-#@data
+@data
 def mark_in_progress(data: data_base, id: str):
     """
     Mark existing task in the data base as in-progress.
@@ -130,7 +130,7 @@ def mark_in_progress(data: data_base, id: str):
         raise KeyError("There no task with this id")
 
 
-#@data
+@data
 def mark_done(data: data_base, id: str):
     """
     Marks existing task in the data base as done.
